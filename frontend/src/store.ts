@@ -10,8 +10,18 @@ export interface Suggestion {
 
 const STORAGE_KEY = 'media-saran-pramuka';
 
+const loadSuggestions = (): Suggestion[] => {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error('Failed to load suggestions:', e);
+    return [];
+  }
+};
+
 export const store = reactive({
-  suggestions: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]') as Suggestion[],
+  suggestions: loadSuggestions(),
   
   addSuggestion(category: string, message: string) {
     const newSuggestion: Suggestion = {
