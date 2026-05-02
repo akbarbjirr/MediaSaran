@@ -8,7 +8,7 @@ const password = ref('');
 const error = ref('');
 
 const handleLogin = () => {
-  if (password.value === 'pramuka123') {
+  if (password.value === 'adminygy') {
     localStorage.setItem('admin_session', 'true');
     router.push('/admin');
   } else {
