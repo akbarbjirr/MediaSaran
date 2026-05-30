@@ -5,7 +5,7 @@ const kv = new Redis({
 });
 
 export default async function handler(req, res) {
-  const { id } = req.query;
+  const id = req.query.id || req.url.split('?')[0].split('/').pop();
 
   try {
     if (req.method === 'PATCH') {
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       let suggestions = await kv.get('suggestions');
       if (!suggestions) suggestions = [];
 
-      const index = suggestions.findIndex(s => s.id === id);
+      const index = suggestions.findIndex(s => String(s.id) === String(id));
       if (index !== -1) {
         suggestions[index].status = status;
         await kv.set('suggestions', suggestions);
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       let suggestions = await kv.get('suggestions');
       if (!suggestions) suggestions = [];
 
-      suggestions = suggestions.filter(s => s.id !== id);
+      suggestions = suggestions.filter(s => String(s.id) !== String(id));
       await kv.set('suggestions', suggestions);
       return res.status(200).json({ success: true });
     }
