@@ -40,7 +40,7 @@ export const store = reactive({
 
   async updateStatus(id: string, status: Suggestion['status']) {
     try {
-      await fetch(`${API_URL}/suggestions/${id}`, {
+      await fetch(`${API_URL}/suggestion?id=${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
@@ -56,7 +56,7 @@ export const store = reactive({
 
   async deleteSuggestion(id: string) {
     try {
-      await fetch(`${API_URL}/suggestions/${id}`, {
+      await fetch(`${API_URL}/suggestion?id=${id}`, {
         method: 'DELETE'
       });
       this.suggestions = this.suggestions.filter(s => s.id !== id);
