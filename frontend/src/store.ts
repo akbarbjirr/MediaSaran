@@ -8,47 +8,61 @@ export interface Suggestion {
   createdAt: number;
 }
 
-const STORAGE_KEY = 'media-saran-pramuka';
 
-const loadSuggestions = (): Suggestion[] => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    console.error('Failed to load suggestions:', e);
-    return [];
-  }
-};
+
+const API_URL = '/api';
 
 export const store = reactive({
-  suggestions: loadSuggestions(),
+  suggestions: [] as Suggestion[],
   
-  addSuggestion(category: string, message: string) {
-    const newSuggestion: Suggestion = {
-      id: Date.now().toString(),
-      category,
-      message,
-      status: 'pending',
-      createdAt: Date.now()
-    };
-    this.suggestions.unshift(newSuggestion);
-    this.save();
-  },
-
-  updateStatus(id: string, status: Suggestion['status']) {
-    const suggestion = this.suggestions.find(s => s.id === id);
-    if (suggestion) {
-      suggestion.status = status;
-      this.save();
+  async loadSuggestions() {
+    try {
+      const res = await fetch(`${API_URL}/suggestions`);
+      this.suggestions = await res.json();
+    } catch (e) {
+      console.error('Failed to load suggestions:', e);
     }
   },
 
-  deleteSuggestion(id: string) {
-    this.suggestions = this.suggestions.filter(s => s.id !== id);
-    this.save();
+  async addSuggestion(category: string, message: string) {
+    try {
+      const res = await fetch(`${API_URL}/suggestions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, message })
+      });
+      const newSuggestion = await res.json();
+      this.suggestions.unshift(newSuggestion);
+    } catch (e) {
+      console.error('Failed to add suggestion:', e);
+    }
   },
 
-  save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.suggestions));
+  async updateStatus(id: string, status: Suggestion['status']) {
+    try {
+      await fetch(`${API_URL}/suggestions/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      const suggestion = this.suggestions.find(s => s.id === id);
+      if (suggestion) {
+        suggestion.status = status;
+      }
+    } catch (e) {
+      console.error('Failed to update status:', e);
+    }
+  },
+
+  async deleteSuggestion(id: string) {
+    try {
+      await fetch(`${API_URL}/suggestions/${id}`, {
+        method: 'DELETE'
+      });
+      this.suggestions = this.suggestions.filter(s => s.id !== id);
+    } catch (e) {
+      console.error('Failed to delete suggestion:', e);
+    }
   }
 });
+store.loadSuggestions();
